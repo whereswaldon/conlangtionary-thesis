@@ -1,0 +1,80 @@
+\chapter{Future Research}
+\label{chap:future}
+
+Conlangtionary is a prototype system. Though it does surpass a platform like a wiki for representing a language, the awkward design of its user interface and access control system hold it back from being an immediate replacement for current online conlanging platforms. At its core though, Conlangtionary does have a solid model for representing spoken languages. To make it ready for the conlanging community at large, it needs a number of substantial refactors. This chapter details each major area that could benefit from change.
+
+\section{Access Control Refactor}
+\label{sec:refactor-access}
+
+As discussed in Section \ref{sec:access-control}, Conlangtionary implements a very simple policy for which users can perform which tasks. Admins can do all actions to all content, authenticated users can do anything but delete content, and nonauthenticated users can only read content. While this simplicity made Conlangtionary's code simpler, it made users unable to destroy erroneous data. While users still had the option to edit an incorrect word or definition to make it valid, it would be simpler to just allow them to delete the content. A more developed system could be implemented as follows:
+
+Content can be marked as public or private. Content belongs to a single ``creator" user, a single ``owner" user, and many (or only one) ``contributor" users. The creator of a piece of content controls who else can own it. This includes removing themself from the owners of the content, after which time they lose the ability to modify who owns the content. Any owner of a piece of content can edit or delete it.
+
+\section{Tag Refactor}
+\label{sec:refactor-tag}
+
+Tags are a great, flexible, expressive way to cluster vocabulary into arbitrary categories with user-defined meaning, but the current implementation has one flaw: tags cannot form internal hierarchies. Currently, if your language operated with multiple type of pronoun, you would need a tag for each type of pronoun. If your language also operated on pronouns as a whole, each definition that defined a pronoun would need both the ``pronoun" tag and the ``demonstrative pronoun" tag (for example). 
+
+At first glance, this system seems fine, and it is adequate to group words. However, the experience of adding multiple necessarily-related tags to a word rapidly becomes tedious. If a user has already placed a definition into a subcategory of ``pronoun" (by tagging it as a ``demonstrative pronoun"), why should they need to tag it as a ``pronoun" as well?
+
+This problem can easily be solved by allowing tags to form a tree, much like biological taxonomy. Give each tag a reference to another ``parent" tag at the database level. If a word is tagged with a given tag, it is automatically also tagged with the parent of that tag and its parent tags up until a tag in the ancestry has no parents. This would require relatively little work on the database side of the application, but significant refactoring of the User Interface and of the logic that creates definitions and tags.
+
+\section{Definition Augmentation}
+\label{sec:refactor-definitions}
+
+Currently, definitions are some text that defines the word, a set of tags that apply to that definition, and some notes about that definition that can be used for essentially any purpose. These features suffice, but there are two major areas in which definitions can be improved.
+
+Firstly, definitions could include a field for a pronunciation guide. This string could be written in the International Phonetic Alphabet or in phonetic English; the only important thing is that it helps the user discern the correct way to pronounce the word \cite{IPA}. This refactor requires small changes to the database, creation logic, and user interface, but does not introduce any serious overhead to the system.
+
+The second augmentation is related. Conlangtionary could store a pronunciation audio clip so that users could record a correct pronunciation of a term when they defined it. This method is less ambiguous (especially if the pronunciation string is in IPA, which few laypeople know), but requires more systemic changes to the platform. Storing audio clips requires significantly more storage space than storing text, and playing them through the user interface would mean adding controls and appropriate libraries of Javascript to handle audio playback.
+
+\section{Description Removal}
+\label{sec:refactor-description}
+
+Descriptions in Conlangtionary were intended to provide a place for conlangers to add any miscellanous information about their language that didn't easily translate into the structure of a Conlangtionary language. Information such as grammatical usage, example texts, and the history of the people or culture to whom the conlang belongs. While this is a necessary component of a conlang (cultural context), structuring it as a single blob of text was a mistake. This design forces a conlanger to maintain an enormous single document containing essentially all prose information about their language. They also are forced to do that maintenance through Conlangtionary's markdown editor which, although useful, is not full-featured enough to make for a pleasant editing experience.
+
+As an alternative to this single-blob-of-text approach, a future version of Conlangtionary ought to allow multiple pages of reference material to be attached to a language. On the database level, this is simply a refactor from a one-to-one to a one-to-many relationship between languages and descriptions, though the data that descriptions need to store would change to include titles and perhaps other resources like embedded images.
+
+This would allow the user to define a reference manual for grammar separately from reference material about a conlang's culture. These separate documents of information could also be included as chapters in the proposed Dictionary View (see Section \ref{sec:refactor-dictionary}).
+
+\section{Dictionary View}
+\label{sec:refactor-dictionary}
+
+As Conlangtionary's name suggests, it is a dictionary for conlangs. It stores information about the words that make up a conlang and their meanings. In several places, user-interface decisions were influenced by conventions from physical dictionaries (the formatting of definitions on a language view, for instance), but Conlangtionary itself doesn't current generate an actual dictionary document for a given conlang. The system has all of the requisite data. Generating a PDF of the language with all of the reference materials at the beginning followed by an alphabetical listing of all of the language's words is a decent-sized addition to the code, but a very powerful one.
+
+To do this, Conlangtionary would need to incorporate a package for writing PDF files and then define the structure that the dictionary would take as a view.
+
+\section{User Interface}
+\label{sec:refactor-ui}
+
+Conlangtionary's user interface is usable, and that is all. It doesn't look good, nor is it intuitive. It was designed by a programmer, and as such, is only intuitive to its designer. This paper does not set out to propose an alternative user interface, but merely to acknowledge the need. This goal would be easier to accomplish in conjunction with Section \ref{sec:refactor-api}.
+
+\section{Application Programmer Interface}
+\label{sec:refactor-api}
+
+This is the most ambitious of the proposed refactors: rewrite essentially the entire application around a more modern paradigm. When Conlangtionary was initially designed, Laravel was chosen as the framework because it was familiar to the designer \cite{Laravel}. While Laravel has many features that are modern, Conlangtionary is written in such a way that it handles both the logic that processes data and the logic that renders that data to the user. The two cannot be easily separated. Modern web development separates these two sets of logic into the front-end (display the data) and back-end (store, manipulate, and retrieve the data). This abstraction allows the two sides of an application to be developed separately.
+
+If this change were adopted, some of the existing Laravel code could be reused. Namely, the Controller logic that creates, reads, updates, and deletes Models would only need to be altered to return data instead of HTML. The front end would need to be completely rewritten though. Technologies like Backbone and React would be good choices for making the front end a powerful application.
+
+Ideally, the front end of the site could be written as a single page that allows users to act on each part of a language (definitions, words, descriptive text, and even grammatical rules) without navigating away from that page. This would be significantly more efficient in terms of the number of clicks that it takes for a user to perform a given action on a language.
+
+\section{Language Assumptions}
+\label{sec:refactor-language-assumption}
+
+In a platform designed to represent languages of unlimited variety, the fact that the web application itself is fundamentally English-oriented is nearly inexcusable. Technically, since Conlangtionary supports Unicode, a user can define words in any left-to-right language within the Unicode character scheme, but this doesn't change the text on the controls of the site or the paragraphs of explanatory text on the Morphological Generator. This makes the application considerably less useful for non-English-speaking users.
+
+Additionally, the structure of a Definition within Conlangtionary assumes that the user is defining the term in the Conlang in a single other language. This prevents any possiblility of defining a conlang on the site in terms of another conlang. A better system would define definitions as a transformation of a term from a target language into a destination language (which could be itself). For instance, defining the English term ``walk" as ``to move with your legs at a speed that is slower than running" transforms an English term into alternative English terms, but defining Spanish ``caminar" as English ``to walk" is a transformation between languages \cite{Merriam-Webster:walk}. Both of these transformations are expressible in terms of a target and destination (alternatively, they could be called source and destination languages). Such a structure would allow an unparalleled level of interplay between conlangs that a platform like Conlangtionary ought to offer.
+
+\section{Stored Transformations}
+\label{sec:refactor-stored-transformations}
+
+The Morphological Generator is a powerful feature that gives Conlangtionary a major advantage over other ways of representing a spoken language, but it falls far short of how useful or powerful such a feature could be if carefully implemented. When you specify a transformation on a language, that transformation acts on the language only once. If you later add a definition that conforms to the source tags of the transformation, it will not automatically be transformed. This means that the user must re-run the Morphological Generator will the same rule in order to have consistent alternative forms for their language's entire vocabulary. This is tedious, and the purpose of the generator was to help remove tedium from developing a conlang.
+
+To fix this, a new data member needs to be added to Conlangtionary languages: Rules. A rule specifies a set of source tags, a set of target tags, and two strings that use PHP regular expressions to transform one into the other (see Section \ref{sec:using-morph-gen}). Whenever a word is added to a conlang, all of that language's rules need to be checked against the word to see whether any alternative forms can be generated. This feature needs to be implemented carefully to guard against recursive transformations that infinitely change a word between forms. It is more than possible to implement an infinite loop by defining a series of transformations that ends where it begins.
+
+Once Conlangtionary tracks rules as entities, words that were generated could track the rule that created them. This means that a user could edit rules to change how the words created by those rules work. This allows the grammar of a language to develop organically (without requiring the user to delete vast swathes of their vocabulary that have been rendered obsolete by a change in conjugation).
+
+\section{Summary}
+\label{sec:refactor-summary}
+
+Conlangtionary was built to prototype what a modern web application for conlanging should be. While it is usable, it served to demonstrate what such an application ought to have more by its deficits than by its features. Hopefully, Conlangtionary's example will be a template of how to start constructing a truly functional conlanging web platform, even if it is (in many instances) an example of what not to do.

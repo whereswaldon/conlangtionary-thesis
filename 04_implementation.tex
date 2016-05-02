@@ -1,0 +1,44 @@
+\chapter{Implementation}
+\label{chap:implementation}
+
+Conlangtionary is a web application that processes highly structured data. With that in mind, it is built on top of several popular technologies for modern web development.
+
+The logic that processes the data and handles user requests is in PHP and is built atop the Laravel framework \cite{Laravel}. Laravel handles the majority of modern web security behind the scenes, which allowed for more time to develop Conlangtionary's other features. Laravel also abstracts away much of the database interaction necessary to store and retrieve data through its Eloquent ORM (Object-Relational Mapping). This allows Conlangtionary's code to be deployed on platforms with MySQL or PostgreSQL as the database implementation with minimal (or no) code changes. The site's look and feel are built atop Bootstrap CSS (version 3) \cite{Bootstrap}.
+
+\section{Database}
+\label{sec:database}
+
+As Section \ref{sec:language-representation} shows, it is the structure of Conlangtionary's data that allows languages to be built flexibly. Translating Section \ref{sec:language-representation}'s text description into a database schema is surprisingly easy. The rough relationships between tables in the database can be described as follows: Conlangtionary has many languages. A language has many words, many tags, and a single description. A word has many definitions. A definition has many tags. This structure can be seen in Figure \ref{fig:eer-diagram}.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{figures/Conlangtionary-EER-Diagram}
+\caption{An overview of the structure of Conlangtionary's Database as an EER Diagram.}
+\centering
+\label{fig:eer-diagram}
+\end{figure}
+
+Conlangtionary's running instance uses PostgreSQL because that is the only free database option on Heroku hosting (see Section \ref{sec:hosting}).
+
+\section{Permissions}
+\label{sec:permissions}
+
+Just as Conlangtionary development commenced, Laravel released an update in which they added an Authorization layer called Gate into the default framework. Gate allows an application developer to specify user permissions as a function of the attempted action, the user performing the action, and the object that is being acted upon. For instance, if a user wanted to edit a word the Gate logic would check whether that particular user has the permissions necessary to edit that particular word. This offers excellent granularity of permissions, but results in a rule for every single action upon every single kind of entity stored in the database. The primary motivation behind Conlangtionary's existing permissions was keeping this section of the application simple. To achieve simplicity, authenticated users were given the ability to perform any action except deleting content. An administrator account can perform any action. This logic was easy to write and to enforce, but has considerable drawbacks (see Section \ref{sec:refactor-access}).
+
+\section{Aesthetics}
+\label{sec:aesthetics}
+
+The appearance and layout of Conlangtionary are, by and large, simply the defaults of the Bootstrap CSS Framework \cite{Bootstrap}. No user interface was planned before beginning development, which resulted in an awkward and somewhat counterintuitive user interface that grew new features without rhyme or reason.
+
+In the beginning, most content was managed through global management menus (a menu for all languages on the site, a menu for all words on the site, a menu for all definitions, etc.), but as the quantity of content grew, this strategy rapidly became untenable. Instead of global menus, each language gained a page from which a user could edit any part of that language. Unfortunately, the old global menus were left in the user interface, which served as a source of confusion for several users.
+
+The final structure of language managers differentiates different types of content with colored panels. This can be seen in Figure \ref{fig:keebouuzhodee-not-logged-in}.
+
+\section{Morphological Generation}
+\label{sec:morph-gen}
+
+The most complex component of Conlangtionary's subsystem is the morphological generation feature that allows users to specify transformations between different forms of a word. To use this feature, a user selects a set of definition tags that match definitions that are affected by some morphological rule (for instance, verb conjugation or noun declination). After selecting these ``source tags," the user can define a regular expression that will be matched against the word strings of each definition bearing all of the source tags. The regular expression can have parenthetical sections that capture a section of the word's text for later reuse. Similarly, to specify the results of the transformation, a user selects a set of definition tags and writes a string that uses the captured sections in a new context. This behavior is common among programmatic uses of regular languages. In this case, the PHP preg\_replace() function is used \cite{pregreplace}.
+
+\section{Hosting}
+\label{sec:hosting}
+
+The instance of Conlangtionary that actually saw use ran on the Heroku hosting platform \cite{heroku}. Heroku offers a free tier of hosting that has a limited database size, relatively slow response time, and is required to sleep for 6 hours a day. While these constraints would cripple many serious applications, Conlangtionary's database didn't grow larger than the database allowed and no one ever actually used the application for 18 hours in a single day, so Heroku proved an excellent choice for prototyping the system.

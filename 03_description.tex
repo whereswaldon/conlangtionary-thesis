@@ -1,0 +1,80 @@
+\chapter{Description}
+\label{chap:description}
+There are many design considerations when one is creating a web application with maximum flexibility. It is easy to make an assumption about how users will want to structure their data, and that assumption may unintentionally limit the capabilities of the software as a whole. Originally, Conlangtionary's design included features that tracked a definition's part-of-speech, but further consideration revealed that this design would limit conlangers to using parts of speech as a fundamental lexical category in their languages. This original design was refined for several months before arriving at the structure that the platform currently uses to store languages. Ultimately, the structure of Conlangtionary's data model can be broken down into three subsections: Language Representation, Language Generation, and Access Control.
+
+\section{Language Representation}
+\label{sec:language-representation}
+
+Representing the internal structure of a language as data is difficult. It might be intuitive to break a language into words and to make each world have attributes like parts of speech and tense, but it is also extremely restrictive. By doing so, you limit the ways in which a word can be categorized. The concept of a ``part of speech" is simply a role that grammarians assign to a word, rather than an absolute law of linguistics. To allow adequate flexibility for the conlanging user, a different structure is necessary.
+
+\subsection{Words}
+\label{subsec:words}
+In languages that have a written form, a word is a sequence or ``string" of characters conveying a pronunciation and meaning. However, a single word can have more than one definition. Consider the English word ``cleave." Cleave means both ``to adhere firmly and closely or loyally and unwaveringly" and ``to separate into distinct parts and especially into groups having divergent views," and it is thus the only English word to be its own antonym \cite{Merriam-Webster:cleave}. Clearly, any flexible language design needs to accommodate the overloading of a word by allowing multiple definitions. Since words can also have definitions with differing parts of speech (e.g. ``to go on a walk" where ``walk" is a noun, and ``I walk" where ``walk" is a verb), a reasonably flexible design must store data about the usage of a word at the definition level as well. This leaves little more than the string of characters that form a word to be stored at the word level, and instead puts most information into definitions.
+
+\subsection{Definitions}
+\label{subsec:definitions}
+A word's definition needs to have several components: a fragment of text explaining that word's meaning, a pronunciation guide of some sort, an association with the word that it defines, and information about how to use this definition in context. The fragment explaining its meaning can be as simple as ``this word means tree" or as complex as ``[the] continuous surface of the body ... that begins with the inside flesh of the fingers and continues over the palm of the hand and up the inner side of the arm to the bend of the elbow" \cite{native-tongue}. Pronunciation guides vary between languages, but often a string in the International Phonetic Alphabet suffices.
+
+The most challenging element of designing a definition is storing information about its grammatical role. The most naive way would be to allow a paragraph explaining proper usage to readers, but this is both cumbersome and difficult to parse. Searching by such information would require users to be perfectly consistent in formatting or messy keyword searches. However, the obvious alternative of hard-coding a part of speech, tense, declension, aspect, or any other obscure lexical category leaves the conlanger unable to invent meaningful categories for their definitions that can then be expressed by the application. To solve this problem, Conlangtionary uses tags on definitions to store data.
+
+\subsection{Tags}
+\label{subsec:tags}
+Readers will no doubt be familiar with the kinds of tags that are used to categorize blog posts or tweets. Conlangtionary employs a similar system to organize definitions according to how they function within a language. Since a given definition can have any number of tags, it follows that those tags are capable of placing that definition into any number of sets of words with the same tag. This means that tags can be used for every level of meaningful differentiation within a language.
+
+For instance, if a user were defining the English language in Conlangtionary, they might create a word ``walk" with multiple definitions. Walk could be tagged as a ``Noun" if the user were simply tagging by English parts of speech, but that fails to leverage the full power of the tagging system. Walk could also be tagged as ``Singular," ``Regularly Pluralized," and ``Quantitative." These could mean, respectively, that the word is currently in a singular form, that it follows the usual English pluralization rule (namely, adding an ``s" suffix) and that it can be used grammatically with a quantity. The last is important because words that refer to substances often cannot be used in this way. For instance, one cannot say ``I have two rice and eighteen water" without context.
+
+Tags are also extremely useful when it comes to Conlangtionary's generative features (see section \ref{sec:language-generation}).
+
+\subsection{Descriptions}
+\label{subsec:descriptions}
+
+A language description is by far the simplest component of a Conlangtionary language. A Description is a markdown description of the language and its use \cite{Markdown}. It has no length limit, and it is intended to describe the culture, origin, pronunciation, and grammar of the language. Since it is in the markdown format, it can easily hyperlink to external resources on the language, which is the preferred way to include reference materials.
+
+\subsection{Structure Summary}
+\label{subsec:structure-summary}
+
+To put all of the components together, a Conlangtionary language is a markdown description, a collection of words, and a collection of tags. Each word in the language has many definitions and each of those definitions has many tags. This loose structure allows the language creator to define arbitrarily complex categories for their language without encountering limits mistakenly imposed by the application developer. Ultimately though, representing a language doesn't make Conlangtionary any more useful than a digital notebook. The generative features of the platform are what allow it to actually surpass its pen-and-paper counterparts.
+
+\section{Language Generation}
+\label{sec:language-generation}
+
+Asking a digital system to understand a completely arbitrary grammar is a hard problem, which is why Conlangtionary--in its current incarnation--makes no attempt whatsoever to comprehend language grammar. However, Conlangtionary does understand regular expressions, and it is able to use these regular expressions to generate new vocabulary based on certain inputs.
+
+This feature was key in differentiating a platform like Conlangtionary from something like Wiktionary. Wiktionary tries to include all conjugations/declensions/pluralizations of a given word on that word's page, but these entries must always be entered by hand. This process is tedious, time-consuming, and error-prone. It seems like a platform with the data-manipulation capabilities of a modern computer should be able to handle such transformations automatically, provided that they follow rules. This is what Conlangtionary offers in its Morphological Generator feature.
+
+\subsection{Tag-based Generation}
+\label{subsec:tag-based-generation}
+
+As a simple example of how to leverage the Morphological Generator, consider the English verb ``walk." An assidious conlanger profiling English could have tagged it with the following: ``Verb," ``First-Person Singular," ``Present-Tense," and ``Regular-Conjugation." With this knowledge, we should be able to conjugate this verb into many other tenses, as the conjugation follows the regular English verb conjugation (see Table \ref{tbl:english-conjugation}).
+
+The transformation from the First-Person Singular in the Present Tense to the First-Person Plural in the Present Tense is trivial. The word does not change, but simply acquires more definitions. The transformation to the other tenses is also trivial. Appending an ``-ed" suffix or prepending the word ``will" isn't very hard either (the specifics of how this is achieved are discussed in section \ref{sec:morph-gen}).
+
+Since these transformations are trivial, Conlangtionary has an easy interface for selecting definitions with a given set of tags and transforming them into other definitions with different tags based upon simple regular-expression rules. This allows conlangers to define many words in a single context and then generate their other forms (provided that they follow consistent rules). Of course, most languages have irregular transformations, but the user can easily define those special words' other forms.
+
+Section \ref{sec:using-morph-gen} contains a step-by-step walkthrough of using the Morphological Generator to contextualize its usage.
+
+\begin{table}
+    \centering
+    \caption{English Regular Verb Conjugation in the Past, Present, and Future Tense}
+    \label{tbl:english-conjugation}
+    \begin{tabular}{|ll||*{2}{r}||}
+        \hline
+        Past & & Singular & Plural \\ \hline \hline
+          & First-Person & -ed (I walked) & -ed (We walked) \\ \hline
+          & Second-Person & -ed (You walked) & -ed (You all walked) \\ \hline
+          & Third-Person & -ed (He/She walked) & -ed (They walked) \\ \hline \hline
+        Present & & Singular & Plural \\ \hline \hline
+          & First-Person & no change (I walk) & no change (We walk) \\ \hline
+          & Second-Person & no change (You walk) & no change (You all walk) \\ \hline
+          & Third-Person & -s (He/She walks) & no change (They walk) \\ \hline \hline
+        Future & & Singular & Plural \\ \hline \hline
+          & First-Person & will - (I will walk) & will - (We will walk) \\ \hline
+          & Second-Person & will - (You will walk) & will - (You all will walk) \\ \hline
+          & Third-Person & will - (He/She will walk) & will - (They will walk) \\ \hline
+    \end{tabular}
+\end{table}
+
+\section{Access Control}
+\label{sec:access-control}
+
+The final design issue within Conlangtionary is how to handle user permissions. Ideally, a platform like Conlangtionary would allow collaboration with peers in the conlanging community via invitation and would optionally allow a language to be developed by the general public. Unfortunately, Conlangtionary doesn't have a sophisticated system for managing which users can perform what actions on which content. Instead, any authenticated user can edit anything and create anything. The only real restriction is that only someone with an administrator account can delete content. This helps to protect against a user having their work erased by other users, but fails to protect users from having their content overwritten. Conlangtionary uses this system purely for its simplicity.
