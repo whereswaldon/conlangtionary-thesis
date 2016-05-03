@@ -6,7 +6,7 @@ Conlangtionary is, fundamentally, a tool for language development. As such, ther
 \section{Accessing Conlangtionary}
 \label{sec:accessing-conlangtionary}
 
-At the time of writing, there was a running instance of Conlangtionary available on Heroku cloud hosting (see Section \ref{sec:hosting}) available at \url{conlangtionary.herokuapp.com}. The server is slow, so it could take up to 30 seconds for the page to load. This latency is a result of the server being asleep. After a user establishes a connection, it should be significantly more responsive. When the page does load, the view should be similar to Figure \ref{fig:home-not-logged-in}. Conlangtionary allows any user to view content, which is demonstrated in Section \ref{sec:exploring-conlangs}, but only authenticated users can create or edit content (see Section \ref{sec:account-registration}).
+At the time of writing, there was a running instance of Conlangtionary on Heroku cloud hosting (see Section \ref{sec:hosting}) available at \url{conlangtionary.herokuapp.com}. The server is slow, so it could take up to 30 seconds for the page to load. This latency is a result of the server being asleep. After a user establishes a connection, it should be significantly more responsive. When the page does load, the view should be similar to Figure \ref{fig:home-not-logged-in}. Conlangtionary allows any user to view content, which is demonstrated in Section \ref{sec:exploring-conlangs}, but only authenticated users can create or edit content (see Section \ref{sec:account-registration}).
 
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{figures/home-not-logged-in}
@@ -45,17 +45,17 @@ Signing up for Conlangtionary is easy. When a user is not logged in, all they ha
 \label{fig:registration-form}
 \end{figure}
 
-Filling out this form creates a user account that can log in with the given username and password combination. There isn't currently any email validation, which does leave the site vulnerable to spam accounts. Once a user has an account, they can just click the ``Log In" link in the future to access the protected features of the site.
-
-\section{Logging In}
-\label{sec:logging-in}
-
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{figures/log-in}
 \caption{The login form.}
 \centering
 \label{fig:log-in}
 \end{figure}
+
+Filling out this form creates a user account that can log in with the given username and password combination. There isn't currently any email validation, which does leave the site vulnerable to spam accounts. Once a user has an account, they can just click the ``Log In" link in the future to access the protected features of the site.
+
+\section{Logging In}
+\label{sec:logging-in}
 
 Logging into Conlangtionary is simple. Clicking the ``Log In" button in the menu takes a user to the form shown in Figure \ref{fig:log-in}. Filling out a valid email and password combination allows a user into the site.
 
